@@ -7,6 +7,7 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 
 	humanize "github.com/dustin/go-humanize"
@@ -23,6 +24,7 @@ func walk(root string, info os.FileInfo, err error) error {
 		return nil
 	}
 	ext := filepath.Ext(root)
+	ext = strings.ToLower(ext)
 	extCount[ext]++
 
 	// fmt.Println(root)
