@@ -38,6 +38,11 @@ var program, version string
 
 var flagV = flag.Bool("version", false, "Print version and exit")
 
+// Main exports main()
+func Main() {
+	main()
+}
+
 func main() {
 	program = path.Base(os.Args[0])
 	if version == "" {
