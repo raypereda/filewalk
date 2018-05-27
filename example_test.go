@@ -6,7 +6,6 @@ import (
 
 func Example() {
 	main.Main()
-	// Output: hello
 	// Output:
 	// 	51
 
