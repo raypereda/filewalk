@@ -16,7 +16,74 @@ import (
 var count int
 var extCount = make(map[string]int)
 
-func walk(root string, info os.FileInfo, err error) error {
+var walk = walkByExt
+
+var banned = map[string]bool{
+	".pdf": true,
+	".sql": true,
+}
+var sep = string(filepath.Separator)
+var appGroup = map[string]bool{
+	"Business":              true,
+	"CareSystems":           true,
+	"COE":                   true,
+	"Encounters":            true,
+	"ETG":                   true,
+	"Incubator":             true,
+	"OES":                   true,
+	"ONM":                   true,
+	"PCE":                   true,
+	"QA":                    true,
+	"Reporting":             true,
+	"ReportingAndAnalytics": true,
+	"ResearchAndInnovation": true,
+	"TPCM":                  true,
+}
+
+var app string
+
+// walkProject collects stats per TFS project
+func walkByProjects(root string, info os.FileInfo, err error) error {
+	if err != nil {
+		return err
+	}
+	if info.IsDir() {
+		return nil
+	}
+	ext := filepath.Ext(root)
+	ext = strings.ToLower(ext)
+
+	// fmt.Println(">>>", ext)
+	if !banned[ext] {
+		return nil
+	}
+
+	dir := strings.SplitN(root, sep, 4)
+	last := 2
+	if appGroup[dir[1]] {
+		last = 3
+	}
+	app1 := strings.Join(dir[0:last], sep)
+	if app == "" {
+		app = app1
+	}
+
+	if *flagPaths {
+		fmt.Println("root:", root)
+	}
+
+	if strings.Compare(app, app1) != 0 {
+		printExtCount(extCount)
+		extCount = make(map[string]int)
+		app = app1
+	}
+	extCount[ext]++
+	count++
+	return nil
+}
+
+// walkByExt collects stats by file extensions
+func walkByExt(root string, info os.FileInfo, err error) error {
 	if err != nil {
 		return err
 	}
@@ -34,9 +101,13 @@ func walk(root string, info os.FileInfo, err error) error {
 
 var done = make(chan bool)
 
-var program, version string
+var program string
+var version = "0.2"
 
 var flagV = flag.Bool("version", false, "Print version and exit")
+
+var flagApp = flag.Bool("app", true, "Count banned files by app")
+var flagPaths = flag.Bool("path", false, "Print full path of each banned file")
 
 // Main exports main()
 func Main() {
@@ -63,6 +134,10 @@ func main() {
 	}
 	args := flag.Args()
 
+	if *flagApp {
+		walk = walkByProjects
+	}
+
 	var root string
 
 	if len(args) == 0 {
@@ -78,8 +153,8 @@ func main() {
 	filepath.Walk(root, walk)
 	done <- true
 
-	fmt.Println(count)
 	printExtCount(extCount)
+	fmt.Println("file count:", count)
 }
 
 func markProgress() {
@@ -109,7 +184,10 @@ func (p pairList) Less(i, j int) bool { return p[i].Value < p[j].Value }
 func (p pairList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func printExtCount(counts map[string]int) {
-	fmt.Println()
+	if *flagApp {
+		fmt.Println("app:", app)
+	}
+
 	ranked := rankByExtCount(counts)
 	fmt.Printf("%4s %s\n", "#", "extension")
 

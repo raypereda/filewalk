@@ -1,10 +1,8 @@
 package main_test
 
-import (
-	"github.com/raypereda/filewalk"
-)
-
-func Example() {
+func ExampleByExt() {
+	// TODO: fix this
+	// add "-path=false" as command-line parameter
 	main.Main()
 	// Output:
 	// 	51
@@ -18,4 +16,22 @@ func Example() {
 	// 	1 .exe
 	// 	1 .idx
 	// 	1 .pack
+}
+
+func ExampleByProject() {
+	// TODO: fix this
+	// no additional command-line parameters for this
+	main.Main()
+	//  Output:
+	// 	app: hss/App1
+	// 	# extension
+	// 	1 .pdf
+	//  app: hss/App2
+	// 	# extension
+	// 	1 .sql
+	//  app: hss/COE/app3
+	// 	# extension
+	// 	2 .pdf
+	// 	1 .sql
+	//  file count: 5
 }
