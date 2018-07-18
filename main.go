@@ -13,14 +13,18 @@ import (
 	humanize "github.com/dustin/go-humanize"
 )
 
-var count int
+var bannedCount int
+var fileCount int
 var extCount = make(map[string]int)
 
 var walk = walkByExt
 
 var banned = map[string]bool{
-	".pdf": true,
-	".sql": true,
+	".doc":  true,
+	".xdoc": true,
+	".pdf":  true,
+	".xls":  true,
+	".xlsx": true,
 }
 var sep = string(filepath.Separator)
 var appGroup = map[string]bool{
@@ -44,12 +48,14 @@ var app string
 
 // walkProject collects stats per TFS project
 func walkByProjects(root string, info os.FileInfo, err error) error {
+	fileCount++
 	if err != nil {
 		return err
 	}
 	if info.IsDir() {
 		return nil
 	}
+
 	ext := filepath.Ext(root)
 	ext = strings.ToLower(ext)
 
@@ -58,27 +64,29 @@ func walkByProjects(root string, info os.FileInfo, err error) error {
 		return nil
 	}
 
-	dir := strings.SplitN(root, sep, 4)
-	last := 2
-	if appGroup[dir[1]] {
-		last = 3
-	}
-	app1 := strings.Join(dir[0:last], sep)
-	if app == "" {
-		app = app1
-	}
+	i := strings.Index(root, sep)
+	// fmt.Println("i", i)
+	app1 := root[i+1:]
+	// fmt.Println("app1", app1)
+	j := strings.Index(app1, sep)
+	// fmt.Println("j", j)
+	app1 = app1[:j]
+	// fmt.Println("app1:", app1)
 
 	if *flagPaths {
 		fmt.Println("root:", root)
 	}
 
 	if strings.Compare(app, app1) != 0 {
-		printExtCount(extCount)
+		printExtCount2(extCount)
 		extCount = make(map[string]int)
+		for ext := range banned {
+			extCount[ext] = 0
+		}
 		app = app1
 	}
 	extCount[ext]++
-	count++
+	bannedCount++
 	return nil
 }
 
@@ -95,7 +103,7 @@ func walkByExt(root string, info os.FileInfo, err error) error {
 	extCount[ext]++
 
 	// fmt.Println(root)
-	count++
+	bannedCount++
 	return nil
 }
 
@@ -105,7 +113,6 @@ var program string
 var version = "0.2"
 
 var flagV = flag.Bool("version", false, "Print version and exit")
-
 var flagApp = flag.Bool("app", true, "Count banned files by app")
 var flagPaths = flag.Bool("path", false, "Print full path of each banned file")
 
@@ -153,8 +160,9 @@ func main() {
 	filepath.Walk(root, walk)
 	done <- true
 
-	printExtCount(extCount)
-	fmt.Println("file count:", count)
+	printExtCount2(extCount)
+	fmt.Fprintf(os.Stderr, "banned count: %d \n", bannedCount)
+	fmt.Fprintf(os.Stderr, "file count: %d \n", fileCount)
 }
 
 func markProgress() {
@@ -163,11 +171,11 @@ func markProgress() {
 	for {
 		select {
 		case <-done:
-			fmt.Fprintf(os.Stderr, "Done!")
+			fmt.Fprintf(os.Stderr, "Done!\n")
 			return
 		case <-ticker.C:
 			fmt.Fprintf(os.Stderr, "Files processed %6s\n",
-				humanize.Comma(int64(count)))
+				humanize.Comma(int64(bannedCount)))
 		}
 	}
 }
@@ -194,6 +202,51 @@ func printExtCount(counts map[string]int) {
 	for _, pair := range ranked {
 		fmt.Printf("%4d %s\n", pair.Value, pair.Key)
 	}
+}
+
+type pair2 struct {
+	Key   string
+	Value int
+}
+type pairList2 []pair2
+
+func (p pairList2) Len() int           { return len(p) }
+func (p pairList2) Less(i, j int) bool { return p[i].Key < p[j].Key }
+func (p pairList2) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+var printedHeaders = false
+
+func printExtCount2(counts map[string]int) {
+	count := rankByExt(counts)
+	if len(count) == 0 {
+		return
+	}
+
+	if !printedHeaders {
+		printedHeaders = true
+		fmt.Print("application(s) ")
+		for _, pair := range count {
+			fmt.Print(pair.Key, " ")
+		}
+		fmt.Println()
+	}
+
+	fmt.Print(app, " ")
+	for _, pair := range count {
+		fmt.Print(pair.Value, " ")
+	}
+	fmt.Println()
+}
+
+func rankByExt(extFrequencies map[string]int) pairList2 {
+	pl := make(pairList2, len(extFrequencies))
+	i := 0
+	for k, v := range extFrequencies {
+		pl[i] = pair2{k, v}
+		i++
+	}
+	sort.Sort(pl)
+	return pl
 }
 
 func rankByExtCount(extFrequencies map[string]int) pairList {

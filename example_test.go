@@ -3,7 +3,7 @@ package main_test
 func ExampleByExt() {
 	// TODO: fix this
 	// add "-path=false" as command-line parameter
-	main.Main()
+	// filewalk.Main()
 	// Output:
 	// 	51
 
@@ -21,7 +21,7 @@ func ExampleByExt() {
 func ExampleByProject() {
 	// TODO: fix this
 	// no additional command-line parameters for this
-	main.Main()
+	// main.Main()
 	//  Output:
 	// 	app: hss/App1
 	// 	# extension
