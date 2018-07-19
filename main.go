@@ -21,7 +21,7 @@ var walk = walkByExt
 
 var banned = map[string]bool{
 	".doc":  true,
-	".xdoc": true,
+	".docx": true,
 	".pdf":  true,
 	".xls":  true,
 	".xlsx": true,
