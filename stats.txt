@@ -1,4 +1,0 @@
-application(s) .doc .pdf .xdoc .xls .xlsx 
-App1 0 1 0 0 0 
-App2 1 0 0 0 0 
-COE 2 2 1 2 1 
