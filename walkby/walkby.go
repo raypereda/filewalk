@@ -111,7 +111,7 @@ func walkByExt(root string, info os.FileInfo, err error) error {
 var done = make(chan bool)
 
 var program string
-var version = "0.2"
+var version = "0.3"
 
 var flagV = flag.Bool("version", false, "Print version and exit")
 var flagApp = flag.Bool("app", false, "Count banned files by app (Molina specific)")
