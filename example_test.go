@@ -1,12 +1,9 @@
 package main_test
 
-func ExampleByExt() {
-	// TODO: fix this
-	// add "-path=false" as command-line parameter
-	// filewalk.Main()
+func ExampleWalkByExt() {
+	H
 	// Output:
 	// 	51
-
 	// 	# extension
 	//    33
 	//    10 .sample
@@ -18,7 +15,7 @@ func ExampleByExt() {
 	// 	1 .pack
 }
 
-func ExampleByProject() {
+func ExampleWalkByProject() {
 	// TODO: fix this
 	// no additional command-line parameters for this
 	// main.Main()

@@ -1,3 +1,5 @@
+// filewalk is a command that recurses a directory and
+// reports counts by file extension.
 package main
 
 import (
@@ -12,6 +14,11 @@ import (
 
 	humanize "github.com/dustin/go-humanize"
 )
+
+// Hi is for an example test
+func Hi() {
+	fmt.Println("hi ray")
+}
 
 var bannedCount int
 var fileCount int
@@ -113,7 +120,7 @@ var program string
 var version = "0.2"
 
 var flagV = flag.Bool("version", false, "Print version and exit")
-var flagApp = flag.Bool("app", true, "Count banned files by app")
+var flagApp = flag.Bool("app", false, "Count banned files by app (Molina specific)")
 var flagPaths = flag.Bool("path", false, "Print full path of each banned file")
 
 // Main exports main()
@@ -123,13 +130,13 @@ func Main() {
 
 func main() {
 	program = path.Base(os.Args[0])
-	if version == "" {
-		version = "Unknown Version"
-	}
 
 	flag.Usage = func() {
-		fmt.Fprintf(os.Stderr, "%s (%s)\n", program, version)
-		fmt.Fprintf(os.Stderr, "Usage: %s [OPTION]... [STARTDIR]...\n", program)
+		fmt.Fprintf(os.Stderr,
+			"%s is a command that recurses a directory and reports counts by file extension.\n",
+			program)
+		fmt.Fprintf(os.Stderr, "Version %s\n", version)
+		fmt.Fprintf(os.Stderr, "Usage: %s [OPTION]... STARTDIR\n", program)
 		flag.PrintDefaults()
 	}
 
@@ -147,9 +154,7 @@ func main() {
 
 	var root string
 
-	if len(args) == 0 {
-		root = "."
-	} else if len(args) == 1 {
+	if len(args) == 1 {
 		root = args[0]
 	} else {
 		flag.Usage()
@@ -160,9 +165,13 @@ func main() {
 	filepath.Walk(root, walk)
 	done <- true
 
-	printExtCount2(extCount)
-	fmt.Fprintf(os.Stderr, "banned count: %d \n", bannedCount)
-	fmt.Fprintf(os.Stderr, "file count: %d \n", fileCount)
+	if *flagApp {
+		printExtCount2(extCount)
+		fmt.Fprintf(os.Stderr, "banned count: %d \n", bannedCount)
+		fmt.Fprintf(os.Stderr, "file count: %d \n", fileCount)
+	} else {
+		printExtCount(extCount)
+	}
 }
 
 func markProgress() {
