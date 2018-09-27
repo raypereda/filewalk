@@ -1,0 +1,6 @@
+application(s) .doc .docx .pdf .xls .xlsx 
+App1 0 0 1 0 0 
+App2 1 0 0 0 0 
+COE 2 1 2 2 1 
+banned count: 10 
+file count: 210 
